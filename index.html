@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports Knowledge Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #ff7e5f, #feb47b);
+            color: #333;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        header {
+            background-color: #333;
+            padding: 20px;
+            text-align: center;
+            color: white;
+        }
+        .timer {
+            font-size: 25px;
+            color: #f00;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .quiz-container {
+            width: 60%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: left; /* Align questions and options to the left */
+        }
+        .question {
+            font-size: 20px;
+            margin: 15px 0;
+        }
+        .answers {
+            list-style-type: none;
+            padding: 0;
+        }
+        .answers li {
+            margin: 10px 0;
+        }
+        .submit-btn {
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .submit-btn:hover {
+            background-color: #555;
+        }
+        .result {
+            font-size: 18px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .feedback {
+            font-size: 18px;
+            color: #008000;
+            margin-top: 15px;
+        }
+        .incorrect {
+            color: #ff0000;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Sports Knowledge Quiz</h1>
+</header>
+
+<div class="timer" id="timer">Time left: 10</div>
+
+<div class="quiz-container" id="quiz-container">
+    <div class="question" id="question">
+        <p>1. Who won the FIFA World Cup in 2018?</p>
+    </div>
+    <ul class="answers" id="answers">
+        <li><input type="radio" name="question1" value="a"> Brazil</li>
+        <li><input type="radio" name="question1" value="b"> France</li>
+        <li><input type="radio" name="question1" value="c"> Germany</li>
+        <li><input type="radio" name="question1" value="d"> Argentina</li>
+    </ul>
+
+    <button class="submit-btn" onclick="submitAnswer()">Submit Answer</button>
+
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+    const questions = [
+        { question: "Who won the FIFA World Cup in 2018?", options: ["Brazil", "France", "Germany", "Argentina"], answer: "b" },
+        { question: "What is the maximum number of players a football team can have on the field at once?", options: ["9", "10", "11", "12"], answer: "c" },
+        { question: "Who holds the record for most goals in a single World Cup?", options: ["Pele", "Miroslav Klose", "Ronaldo", "Just Fontaine"], answer: "d" },
+        { question: "Which country is known for the sport of Cricket?", options: ["USA", "Australia", "Brazil", "Canada"], answer: "b" },
+        { question: "Who won the NBA Championship in 2020?", options: ["Miami Heat", "Los Angeles Lakers", "Golden State Warriors", "Toronto Raptors"], answer: "b" },
+        { question: "What is the highest possible break in snooker?", options: ["147", "145", "130", "160"], answer: "a" },
+        { question: "In which sport would you perform a slam dunk?", options: ["Football", "Basketball", "Tennis", "Baseball"], answer: "b" },
+        { question: "Who won the Wimbledon Men's Singles title in 2019?", options: ["Roger Federer", "Novak Djokovic", "Rafael Nadal", "Andy Murray"], answer: "b" },
+        { question: "Which country hosted the 2016 Summer Olympics?", options: ["China", "USA", "Brazil", "Australia"], answer: "c" },
+        { question: "Which sport is known as 'the king of sports'?", options: ["Basketball", "Football", "Baseball", "Tennis"], answer: "b" },
+        { question: "Who is the most decorated Olympian of all time?", options: ["Michael Phelps", "Usain Bolt", "Simone Biles", "Larisa Latynina"], answer: "a" },
+        { question: "How many players are on a standard rugby team?", options: ["11", "12", "13", "15"], answer: "c" },
+        { question: "Who won the 2012 UEFA Champions League?", options: ["Manchester United", "Chelsea", "Barcelona", "Real Madrid"], answer: "b" },
+        { question: "Which country has won the most Rugby World Cups?", options: ["New Zealand", "South Africa", "England", "Australia"], answer: "a" },
+        { question: "Who holds the record for most goals in football?", options: ["Lionel Messi", "Cristiano Ronaldo", "Pele", "Diego Maradona"], answer: "b" },
+        { question: "Which country is famous for the sport of sumo wrestling?", options: ["China", "South Korea", "Japan", "Thailand"], answer: "c" },
+        { question: "In which sport would you perform a 'perfect 10'?", options: ["Gymnastics", "Skiing", "Boxing", "Swimming"], answer: "a" },
+        { question: "What is the highest possible score in a game of ten-pin bowling?", options: ["300", "200", "150", "250"], answer: "a" },
+        { question: "Which country won the 2022 FIFA World Cup?", options: ["France", "Argentina", "Brazil", "Germany"], answer: "b" },
+        { question: "In which city did the 2020 Summer Olympics take place?", options: ["Tokyo", "Beijing", "Paris", "London"], answer: "a" },
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let timerInterval;
+    let timeLeft = 10;
+
+    function loadQuestion() {
+        if (currentQuestionIndex < questions.length) {
+            const currentQuestion = questions[currentQuestionIndex];
+            document.getElementById("question").innerHTML = `<p>${currentQuestionIndex + 1}. ${currentQuestion.question}</p>`;
+            const options = currentQuestion.options.map((option, index) => 
+                `<li><input type="radio" name="question${currentQuestionIndex}" value="${String.fromCharCode(97 + index)}"> ${option}</li>`
+            ).join('');
+            document.getElementById("answers").innerHTML = options;
+            timeLeft = 10;
+            document.getElementById("timer").innerText = `Time left: ${timeLeft}`;
+            clearInterval(timerInterval);
+            timerInterval = setInterval(countdown, 1000);
+            document.getElementById("result").innerHTML = ''; // Clear previous result feedback
+        } else {
+            document.getElementById("quiz-container").innerHTML = `<h2>Your score is ${score} out of ${questions.length}</h2>`;
+        }
+    }
+
+    function countdown() {
+        timeLeft--;
+        document.getElementById("timer").innerText = `Time left: ${timeLeft}`;
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            submitAnswer();
+        }
+    }
+
+    function submitAnswer() {
+        const currentQuestion = questions[currentQuestionIndex];
+        const selectedAnswer = document.querySelector(`input[name="question${currentQuestionIndex}"]:checked`);
+        
+        if (selectedAnswer) {
+            const feedback = document.createElement("div");
+            if (selectedAnswer.value === currentQuestion.answer) {
+                score++;
+                feedback.classList.add('feedback');
+                feedback.textContent = "Correct!";
+            } else {
+                feedback.classList.add('feedback', 'incorrect');
+                feedback.textContent = "Incorrect!";
+            }
+            document.getElementById("result").appendChild(feedback);
+        }
+
+        currentQuestionIndex++;
+        setTimeout(loadQuestion, 1000); // Load next question after 1 second
+    }
+
+    loadQuestion();
+</script>
+
+</body>
+</html>
